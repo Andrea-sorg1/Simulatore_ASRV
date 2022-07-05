@@ -49,10 +49,10 @@
             <d n="FbMethods" t="CaseInsensitiveHashtable" ckt="String" cvt="Guid">
               <v>FB_Init</v>
               <v>27f0bbcc-5b4b-4b5c-92b7-8c1c85ed8f60</v>
-              <v>FB_Reinit</v>
-              <v>c3ec2907-3ae1-4e8a-b759-20786f829894</v>
               <v>FB_Exit</v>
               <v>271ed7d1-22e1-43d2-8c2e-2929a3c8e5a6</v>
+              <v>FB_Reinit</v>
+              <v>c3ec2907-3ae1-4e8a-b759-20786f829894</v>
             </d>
             <v n="FbName">"__VisuInitInstantiation_Fb"</v>
             <v n="FbGuid">{f843d542-d641-45e1-bc61-78a55102c2ee}</v>
@@ -470,34 +470,34 @@
             <d n="FbMethods" t="CaseInsensitiveHashtable" ckt="String" cvt="Guid">
               <v>ExecuteLooseCapture</v>
               <v>524c5dfa-3ccc-425a-9a7d-e6e845f0ae81</v>
+              <v>ExecuteMouseUp</v>
+              <v>42914b0c-00b0-46d2-94b8-86c9b3fce195</v>
               <v>Init</v>
               <v>85f0ba90-b05c-4b81-9fa4-680d823e943f</v>
               <v>FB_Exit</v>
               <v>220d37ab-922b-4619-8f9d-f171f860fd3e</v>
               <v>ExecuteMouseDblClick</v>
               <v>b5a7db00-fe7c-476e-817d-0bdb12afc4d9</v>
-              <v>ExecuteMouseDown</v>
-              <v>4d886d75-3b70-4d3d-a77a-6534101a9fca</v>
-              <v>ExecuteMouseUp</v>
-              <v>42914b0c-00b0-46d2-94b8-86c9b3fce195</v>
-              <v>ExecuteMouseEnter</v>
-              <v>f7be98fd-6936-4796-94e8-65736a127d33</v>
-              <v>FB_Reinit</v>
-              <v>394dd7f0-eeb2-41b4-87b9-5abf12bfde42</v>
               <v>GetElementInfo</v>
               <v>417f2b84-dc47-4d1f-9a32-c5d8d062cb57</v>
-              <v>abstrGetDefaultCursor</v>
-              <v>8970d83b-b63e-41ae-ac36-f992cea8a4e3</v>
+              <v>ExecuteMouseDown</v>
+              <v>4d886d75-3b70-4d3d-a77a-6534101a9fca</v>
+              <v>FB_Reinit</v>
+              <v>394dd7f0-eeb2-41b4-87b9-5abf12bfde42</v>
+              <v>Initialize</v>
+              <v>e3bff0d9-9c11-4165-a9a7-459117a6b2d0</v>
+              <v>ExecuteMouseMove</v>
+              <v>e738e553-f836-4e65-b2f3-1a67e66eed7d</v>
               <v>ExecuteDialogClosed</v>
               <v>99cd7a73-655a-4477-b6a0-ea34cb146c44</v>
               <v>ExecuteKeyUp</v>
               <v>fd1eab61-423f-48b2-9fed-6ca7af3e28f3</v>
               <v>ExecuteKeyDown</v>
               <v>ae71b5d1-2cfd-48ca-85a5-001e1098f6aa</v>
-              <v>ExecuteMouseMove</v>
-              <v>e738e553-f836-4e65-b2f3-1a67e66eed7d</v>
-              <v>Initialize</v>
-              <v>e3bff0d9-9c11-4165-a9a7-459117a6b2d0</v>
+              <v>abstrGetDefaultCursor</v>
+              <v>8970d83b-b63e-41ae-ac36-f992cea8a4e3</v>
+              <v>ExecuteMouseEnter</v>
+              <v>f7be98fd-6936-4796-94e8-65736a127d33</v>
               <v>ExecuteMouseLeave</v>
               <v>6669cf7b-2183-44de-8b02-016944bdc55b</v>
               <v>FB_Init</v>
