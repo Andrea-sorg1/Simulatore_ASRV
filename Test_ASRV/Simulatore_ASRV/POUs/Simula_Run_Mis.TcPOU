@@ -36,7 +36,6 @@ fCmLen := fCmVel/ TO_REAL(nRappVelLen);
 // Tmr sosta per cambio direzione
 //-----------------------------------------
 fbTCambioDir( IN:=bCambioDir );							// Tmr cambio direzione	
-
 //--------------------------------------------------------
 // Verifica Condizioni per non elaborare lo Step
 //--------------------------------------------------------
