@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <DUT Name="STA_ASRV" Id="{90a86113-659f-4f3e-ac6d-c22b66251994}">
+    <Declaration><![CDATA[TYPE STA_ASRV :
+STRUCT
+	WatchDog_ASRV        : UINT;  			// Check di rete (ASRV++, PC pareggia) 
+	Pos_ASRV             : UINT; 	    	// Nodo attuale ASRV
+	Stato_Miss_ASRV      : UINT;			// Stato Missione ASRV (0=idle, 1=attiva, 2=completa)
+	Stato_ASRV           : Stato_ASRV;		// struct Stato_ASRV
+	Stato_Aux_ASRV 	     : Stato_Aux_ASRV;	// struct Stato_Aux_ASRV
+	ptr_step_ASRV	     : UINT;			// Puntatore passo programma (in esecuzione)
+	offset_da_nodo_ASRV  : UINT;			// distanza da ultimo Nodo (in cm)
+	Allarmi_1_ASRV       : WORD;			// allarmi ASRV word 1
+	Allarmi_2_ASRV       : WORD;			// allarmi ASRV word 2
+	Allarmi_3_ASRV       : WORD;			// allarmi ASRV word 3
+	Allarmi_4_ASRV       : WORD;			// allarmi ASRV word 4
+	Perc_Batteria_ASRV   : UINT;			// % batteria ASRV (0-100)
+	Peso_Teorico_ASRV    : UINT;			// peso a bordo da celle di carico
+	StFree1              : UINT;			
+	StFree2              : UINT;			
+	StFree3              : UINT;			
+	StFree4              : UINT;			
+	StFree5              : UINT;			
+ END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

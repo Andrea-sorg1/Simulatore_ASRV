@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <DUT Name="ASRV" Id="{bef4fdb3-cf6d-444d-9dfd-933a7bda0e21}">
+    <Declaration><![CDATA[TYPE ASRV :
+STRUCT
+	ASRV_MIS 	: MIS_PC;		// missione da PC
+	ASRV_CMD	: CMD_PC;		// comandi da PC
+	ASRV_STA	: STA_ASRV;		// stato ASRV
+	ASRV_num 	: UINT;			// numero ASRV
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

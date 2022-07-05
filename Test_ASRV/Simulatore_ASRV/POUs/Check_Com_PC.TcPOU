@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="Check_Com_PC" Id="{c3fbd749-6150-4ad1-bae9-b26d5b45a64b}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION Check_Com_PC
+VAR_INPUT
+	nWatchDogPC 	: REFERENCE TO UINT;
+	nWatchDogASRV 	: REFERENCE TO UINT;
+	nErroreCom 		: REFERENCE TO UINT;
+	fbTout 			: REFERENCE TO TON;
+END_VAR
+VAR 
+	bInvWD 			: BOOL; 
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//------------------------------------
+// Pareggia WatchDog Stato ASRV
+// PC Incrementa, ASRV pareggia
+//------------------------------------
+bInvWD := TRUE;
+
+IF nWatchDogPC <> nWatchDogASRV THEN
+	bInvWD := FALSE;
+	nWatchDogASRV := nWatchDogPC;
+END_IF
+//-----------------------------------
+// Verifica comunicazione in Errore
+//-----------------------------------
+fbTout( IN:=bInvWD );
+bErrComPc := fbTout.Q;
+IF fbTout.Q = TRUE THEN	// Timeout scaduto
+	nErroreCom  := 1;
+ELSE
+	nErroreCom  := 0;
+END_IF]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,85 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="FB_File_Read" Id="{8dac6e06-44fb-4b53-9ed9-a07eba82162a}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK PUBLIC FB_File_Read
+VAR_INPUT
+	bStart  	: REFERENCE TO BOOL;		// Flag operazione
+	sFileName 	: REFERENCE TO STRING;		// Nome file + path
+	sMess   	: REFERENCE TO STRING;		// messaggio / read / write
+	nModeOpen  	: DWORD;					// modalità di apertura
+	bOperaz_Ok	: REFERENCE TO BOOL;		// risultato Ok			
+	bOperaz_Err : REFERENCE TO BOOL;		// risultato Err
+END_VAR
+VAR
+	// Istanza gestione file 
+	fbFileOpen  : FB_FileOpen;		
+	fbFileClose : FB_FileClose;
+	fbFilePuts  : FB_FilePuts;
+	fbFileGets  : FB_FileGets;
+	eState 		: (IDLE, OPEN_TRIGGER, OPEN, READ_TRIGGER, READ, CLOSE_TRIGGER, CLOSE, ERROR, OK );
+	bError		: BOOL := FALSE;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF bStart = TRUE THEN
+	eState := OPEN_TRIGGER;
+	bStart := FALSE;
+	bOperaz_Ok  := FALSE;
+	bOperaz_Err := FALSE;
+END_IF
+
+CASE eState OF
+	IDLE:							// Nulla
+	//	
+	OPEN_TRIGGER:					// Trigger apertura file
+		fbFileOpen(bExecute:=TRUE, sPathName:=sFileName, nMode := nModeOpen);
+		eState := OPEN;
+	OPEN:							// Attesa file aperto
+		fbFileOpen(bExecute:=FALSE);
+		IF fbFileOpen.bError THEN
+			bError := TRUE;					// -> errore
+			eState := ERROR;
+		ELSIF NOT fbFileOpen.bBusy AND fbFileOpen.hFile <> 0 THEN
+			eState := READ_TRIGGER;
+		END_IF
+	READ_TRIGGER:					// Trigger lettura
+		//fbFileGets(bExecute:=TRUE, sLine=>sMess, hFile:=fbFileOpen.hFile );
+		fbFileGets(bExecute:=TRUE, hFile:=fbFileOpen.hFile );
+		eState := READ;
+	READ:							// Attesa scrittura
+		fbFileGets(bExecute:=FALSE);
+		IF fbFileGets.bError THEN
+			bError := TRUE;					// -> errore
+			eState := CLOSE_TRIGGER;		// -> chiude file
+		ELSIF NOT fbFileGets.bBusy THEN
+			sMess := fbFileGets.sLine;
+			eState := CLOSE_TRIGGER;
+		END_IF
+	CLOSE_TRIGGER:				// Trigger chiusura
+		fbFileClose(bExecute:=TRUE, hFile:=fbFileOpen.hFile );
+		eState := CLOSE;
+	CLOSE:						// Attesa chiusura
+		fbFileClose(bExecute:=FALSE);
+		IF fbFileClose.bError THEN
+			eState := ERROR;
+			bError := TRUE;					// -> errore
+		ELSIF NOT fbFileClose.bBusy THEN
+			IF bError = FALSE THEN
+				eState := OK;
+			ELSE			
+				eState := ERROR;
+			END_IF
+		END_IF
+	OK:								// Fine lettura Ok
+		bOperaz_Ok  := TRUE;
+		bOperaz_Err := FALSE;
+		eState := IDLE;
+	ERROR:							// Fine lettura Error
+		bOperaz_Ok  := FALSE;
+		bOperaz_Err := TRUE;
+		eState := IDLE;
+	
+END_CASE]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

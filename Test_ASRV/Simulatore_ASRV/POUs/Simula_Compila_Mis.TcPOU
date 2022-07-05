@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="Simula_Compila_Mis" Id="{c6d656b8-5506-4a96-9351-36f84dcd939d}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION Simula_Compila_Mis 
+VAR_INPUT
+	auxMis   : REFERENCE TO MIS_PC;
+END_VAR
+VAR
+	ni	: UINT :=0;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//----------------------------------------------------
+// Simula Creazione Missione
+// Elaborata impulsivamente compila la missione        
+//----------------------------------------------------
+auxMis.Pstart_PC		:=143;
+auxMis.PEnd_PC			:=175;
+auxMis.Typ_car_PC		:=0;		// stabilità max
+//------------------ 1
+ni := ni + 1;
+auxMis.Step_PC[ni].ps 	:= 144;
+auxMis.Step_PC[ni].dist := 100;
+auxMis.Step_PC[ni].Comandi.In_Mov_Y 	:= TRUE;
+auxMis.Step_PC[ni].Comandi.In_Mov_Av 	:= TRUE;
+auxMis.Step_PC[ni].Comandi.Lenta 		:= TRUE;	// cambio corsia
+//------------------ 2
+ni := ni + 1;
+auxMis.Step_PC[ni].ps 	:= 154;
+auxMis.Step_PC[ni].dist := 100;
+auxMis.Step_PC[ni].Comandi.In_Mov_X 	:= TRUE;
+auxMis.Step_PC[ni].Comandi.In_Mov_Av 	:= TRUE;
+//------------------ 3
+ni := ni + 1;
+auxMis.Step_PC[ni].ps 	:= 164;
+auxMis.Step_PC[ni].dist := 100;
+auxMis.Step_PC[ni].Comandi.In_Mov_X 	:= TRUE;
+auxMis.Step_PC[ni].Comandi.In_Mov_Av 	:= TRUE;
+//------------------ 4
+ni := ni + 1;
+auxMis.Step_PC[ni].ps 	:= 174;
+auxMis.Step_PC[ni].dist := 100;
+auxMis.Step_PC[ni].Comandi.In_Mov_X 	:= TRUE;
+auxMis.Step_PC[ni].Comandi.In_Mov_Av 	:= TRUE;
+//------------------ 5
+ni := ni + 1;
+auxMis.Step_PC[ni].ps 	:= 175;
+auxMis.Step_PC[ni].dist := 100;
+auxMis.Step_PC[ni].Comandi.In_Mov_Y 	:= TRUE;
+auxMis.Step_PC[ni].Comandi.In_Mov_Av 	:= TRUE;
+auxMis.Step_PC[ni].Comandi.Lenta 		:= TRUE;	// cambio corsia
+//------------------ 6
+ni := ni + 1;
+auxMis.Step_PC[ni].ps 	:= 175;
+auxMis.Step_PC[ni].dist := 0;						// carico su stesso nodo 175
+auxMis.Step_PC[ni].Comandi.CarSoll_0 	:= TRUE;	// carico
+//------------------ 7
+ni := ni + 1;
+auxMis.Step_PC[ni].ps 	:= 175;
+auxMis.Step_PC[ni].dist := 0;				// fine miss su stesso nodo 175
+auxMis.Step_PC[ni].Comandi.End 	:= TRUE;	// fine miss
+//------------------ 
+auxMis.Tot_Step_PC	:=ni;					// nr. Tot Step
+
+
+
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="Simula_Compila_Mis">
+      <LineId Id="7" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="49" Count="0" />
+      <LineId Id="52" Count="1" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="56" Count="1" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="70" Count="0" />
+      <LineId Id="63" Count="5" />
+      <LineId Id="71" Count="23" />
+      <LineId Id="97" Count="6" />
+      <LineId Id="110" Count="0" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="28" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

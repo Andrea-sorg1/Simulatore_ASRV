@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <DUT Name="Comandi" Id="{ea77ff98-2754-4e2b-ad0a-2fd1feba5682}">
+    <Declaration><![CDATA[TYPE Comandi :
+STRUCT
+	In_Mov_X    : BOOL;		// Muovi su asse X
+	In_Mov_Y    : BOOL;		// Muovi su asse Y
+	In_Mov_Av   : BOOL;		// Muovi direzione +
+	In_Mov_Ind  : BOOL;		// Muovi direzione -
+	CarSoll_0   : BOOL;		// Carica pallet (codice alza pallet bit 0)
+	CarSoll_1   : BOOL;		// Carica pallet (codice alza pallet bit 1)
+	Scarica     : BOOL;		// Scarica pallet
+	Lenta       : BOOL;		// Muovi in lenta
+	End         : BOOL;		// Fine Missione (ultimo step)
+	Aux9		: BOOL;		
+	Aux10		: BOOL;	
+	Aux11		: BOOL;
+	Aux12		: BOOL;
+	Aux13		: BOOL;
+	Aux14		: BOOL;
+	Aux15		: BOOL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <DUT Name="Comando_PC" Id="{dbfdbb3b-fad3-46cc-ae3c-25b00f3b16ab}">
+    <Declaration><![CDATA[TYPE Comando_PC :
+STRUCT
+	Stop    : BOOL; 	// Arresta ASRV immediatamente 
+	Aux1	: BOOL;			
+	Aux2	: BOOL;			
+	Aux3	: BOOL;			
+	Aux4	: BOOL;			
+	Aux5	: BOOL;			
+	Aux6	: BOOL;			
+	Aux7	: BOOL;			
+	Aux8	: BOOL;			
+	Aux9	: BOOL;			
+	Aux10	: BOOL;			
+	Aux11	: BOOL;			
+	Aux12	: BOOL;			
+	Aux13	: BOOL;			
+	Aux14	: BOOL;			
+	Aux15	: BOOL;			
+ END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

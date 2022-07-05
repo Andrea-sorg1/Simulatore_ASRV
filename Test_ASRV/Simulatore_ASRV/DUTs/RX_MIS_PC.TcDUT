@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <DUT Name="RX_MIS_PC" Id="{3385bc23-144d-439a-b681-ad9b507e20e3}">
+    <Declaration><![CDATA[TYPE RX_MIS_PC :
+STRUCT
+	Step_PC       : ARRAY[0..MAX_STEP_MISS] OF RX_Step_PC; // Word ==> step programma 0..500
+	Tot_step_PC	  : UINT;						 // Numero di steps della missione
+	Pstart_PC     : UINT;						 // Nodo iniziale missione (=Nodo attuale ASRV)
+	Pend_PC       : UINT;						 // Nodo fine missione (eventuale di carico/scarico)
+	Typ_car_PC    : UINT;						 // Tipo di stabilità carico (0 massima, 9 minima)
+	MisFree1      : UINT;
+	MisFree2      : UINT;
+	MisFree3      : UINT;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

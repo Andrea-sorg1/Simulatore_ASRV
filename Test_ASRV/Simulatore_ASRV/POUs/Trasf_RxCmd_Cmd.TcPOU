@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="Trasf_RxCmd_Cmd" Id="{ed7f9527-09f8-480e-a9ce-3ca0355e0e96}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION Trasf_RxCmd_Cmd
+VAR_INPUT
+	auxRxCmd : REFERENCE TO RX_CMD_PC;
+	auxCmd   : REFERENCE TO CMD_PC;
+END_VAR
+VAR
+	ni 			: UINT :=0;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+//---------------------------------------------------------------------------
+// Trasferisce Buffer Comandi Rx da PC in Comandi ASRV
+// Scompatta la Word Comandi_PC (16 bit) nella struttura Comando_PC (16 byte)
+// COMANDI Rx --> Comandi ASRV
+//---------------------------------------------------------------------------
+// Per evitare di trasferire un dato osoleto, viene sempre azzerato
+// il valore di WatchDog del buffer Rx (non può essere mai 0) 
+// in questo modo conpila i dati solo se sono stati effettivamente ricevuti
+//---------------------------------------------------------------------------
+IF auxRxCmd.WatchDog_PC>0 THEN
+	auxCmd.WatchDog_PC   := auxRxCmd.WatchDog_PC;
+	auxCmd.Start_miss_PC := auxRxCmd.Start_miss_PC;
+	auxCmd.End_miss_PC   := auxRxCmd.End_miss_PC;
+	auxCmd.Pintend_PC    := auxRxCmd.Pintend_PC;
+	auxCmd.New_Pos_PC    := auxRxCmd.New_Pos_PC;
+	auxCmd.Comando_PC.Stop   := UINT_TO_BOOL( auxRxCmd.Comando_PC AND 1);
+	auxCmd.Comando_PC.Aux1   := UINT_TO_BOOL( auxRxCmd.Comando_PC AND 2);
+	auxCmd.Comando_PC.Aux2   := UINT_TO_BOOL( auxRxCmd.Comando_PC AND 4);
+	auxCmd.Comando_PC.Aux3   := UINT_TO_BOOL( auxRxCmd.Comando_PC AND 8);
+	auxCmd.Comando_PC.Aux4   := UINT_TO_BOOL( auxRxCmd.Comando_PC AND 16);
+	auxCmd.Comando_PC.Aux5   := UINT_TO_BOOL( auxRxCmd.Comando_PC AND 32);
+	auxCmd.Comando_PC.Aux6   := UINT_TO_BOOL( auxRxCmd.Comando_PC AND 64);
+	auxCmd.Comando_PC.Aux7   := UINT_TO_BOOL( auxRxCmd.Comando_PC AND 126);
+	auxCmd.Comando_PC.Aux8   := UINT_TO_BOOL( auxRxCmd.Comando_PC AND 256);
+	auxCmd.Comando_PC.Aux9   := UINT_TO_BOOL( auxRxCmd.Comando_PC AND 512);
+	auxCmd.Comando_PC.Aux10  := UINT_TO_BOOL( auxRxCmd.Comando_PC AND 1024);
+	auxCmd.Comando_PC.Aux11  := UINT_TO_BOOL( auxRxCmd.Comando_PC AND 2048);
+	auxCmd.Comando_PC.Aux12  := UINT_TO_BOOL( auxRxCmd.Comando_PC AND 4096);
+	auxCmd.Comando_PC.Aux13  := UINT_TO_BOOL( auxRxCmd.Comando_PC AND 8192);
+	auxCmd.Comando_PC.Aux14  := UINT_TO_BOOL( auxRxCmd.Comando_PC AND 16384);
+	auxCmd.Comando_PC.Aux15  := UINT_TO_BOOL( auxRxCmd.Comando_PC AND 32768);
+END_IF]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

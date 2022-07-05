@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="Simula_Compila_Sta" Id="{4399f744-729f-41ce-8336-cbd7037a9206}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION Simula_Compila_Sta 
+VAR_INPUT
+	nNodo 	: UINT;	// Nodo partenza
+	bCarico	: BOOL; // Stato Carico (True)
+END_VAR
+VAR_INPUT
+ 	auxSta   : REFERENCE TO STA_ASRV;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//--------------------------------------------------------
+// Simula Compilazione Stato Inziale ASRV
+// Elaborata impulsivamente  compila stato iniziale ASRV
+//--------------------------------------------------------
+//---------------------
+// Stato inziale ASRV
+//---------------------
+auxSta.Pos_ASRV := nNodo;	// Nodo partenza;
+auxSta.offset_da_nodo_ASRV	:=0;		
+auxSta.Stato_Miss_ASRV 		:=0;
+auxSta.ptr_step_ASRV		:=0;
+auxSta.Perc_Batteria_ASRV	:=100;
+
+auxSta.Stato_ASRV.In_Automatico := TRUE;
+auxSta.Stato_ASRV.In_Allarme 	:= FALSE;
+auxSta.Stato_ASRV.Ok_Prog		:= TRUE;
+auxSta.Stato_ASRV.PosSoll_0		:= FALSE;
+auxSta.Stato_ASRV.PosSoll_1		:= FALSE;
+auxSta.Stato_ASRV.Carico		:= bCarico;	// Stato carico
+IF bCarico = FALSE THEN
+	auxSta.Peso_Teorico_ASRV	:= 0;	
+END_IF 
+auxSta.Stato_ASRV.Su_Nodo		:= TRUE;
+]]></ST>
+    </Implementation>
+    <LineIds Name="Simula_Compila_Sta">
+      <LineId Id="7" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="50" Count="0" />
+      <LineId Id="22" Count="2" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="29" Count="1" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="60" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="28" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

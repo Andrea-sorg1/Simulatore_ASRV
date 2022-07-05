@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <DUT Name="Stato_Aux_ASRV" Id="{004bc3f3-1c6c-45bc-a41e-96c419a19500}">
+    <Declaration><![CDATA[TYPE Stato_Aux_ASRV :
+STRUCT
+	Fermo_in_X    : BOOL;	// Fermo su asse X (orizz)
+	Fermo_in_Y    : BOOL;	// Fermo su asse Y (vert)
+	Rotaz_in_X    : BOOL;	// In rotazione verso asse X
+	Rotaz_in_y    : BOOL;	// In rotazione verso asse X
+	In_Ricarica   : BOOL;	// In ricarica batteria
+	In_Sost_Batt  : BOOL;	// In sostituzione batteria
+	In_Manutenz   : BOOL;	// In manutenzione
+	Aux7          : BOOL;		
+	Aux8          : BOOL;	
+	Aux9          : BOOL;	
+	Aux10         : BOOL;	
+	Aux11         : BOOL;	
+	Aux12         : BOOL;	
+	Aux13         : BOOL;
+	Aux14         : BOOL;
+	Aux15         : BOOL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

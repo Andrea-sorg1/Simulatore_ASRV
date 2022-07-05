@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <GVL Name="Var_Globali" Id="{13b86399-a80c-44f6-98c3-eea476100a60}">
+    <Declaration><![CDATA[//{attribute 'qualified_only'}
+VAR_GLOBAL PERSISTENT
+	//--------------------- var globali
+	nNumAsrv  : UINT:=1;		// Numero ASRV		
+	sSta      : STA_ASRV;		// Stato ASRV (tx a PC)
+	sCmd      : CMD_PC;			// Comando ASRV (rx da PC)
+	sMis	  : MIS_PC;			// Missione ASRV (rx da PC)
+	//--------------------- classe ASRV
+	fbClassAsrv	: FB_ClassASRV;	// Classe ASRV
+	//--------------------- per visualizzazione 
+	sLastStep : Step_PC;		// ultimo Step elaborato	
+	//-------------------- Test #####
+	nSimCmSpost : UINT :=1 ;	// Siumlazione: Vel. cm 1/10sec spostamento Veloce
+	nRappVelLen : UINT :=10;	// Rapporto Vel su Lenta (10 = lenta 1/10 della veloce)	 
+	fCmSpostAtt : REAL :=0;		// Velocità spostam. attuale
+		
+END_VAR
+
+VAR_GLOBAL
+	//--------------------- buffer comunicazione
+	sTxSta    : TX_STA_ASRV;	// Tx a PC Stato ASRV
+	sRxCmd    : RX_CMD_PC;		// Rx da PC Comandi per ASRV
+	sRxMis	  : RX_MIS_PC;		// Rx da PC Missione per ASRV
+    Old_WatchDog_PC   : UINT;   // Check di rete (PC++, ASRV pareggia) 
+	bResetMis : BOOL := FALSE;	// Flag per reset Missione a bordo ASRV
+
+	//-------------------- Test #####
+	bSimulaMis 	: BOOL := FALSE;  		// Trigger elaborazione simula missione 	-> compila "sMis"
+	bSimulaSta	: BOOL := FALSE;  		// Trigger elaborazione compila Stato   	-> compila "sSta"
+	bSimulaRun	: BOOL := TRUE;  		// Abilita Simulazione avanzamento missione -> compila "sSta"
+	bSimTrigRun	: BOOL := FALSE;  		// Trigger elaborazione Simulazione avanzamento missione 
+	fbTSimRun   : TON := (PT:=T_RUN_MIS);// Timer Simulazione avanzamento missione
+	uCntSimRun	: LINT :=0;				// Cnt elaborazioni Simulazione Run
+	bSimRunNew	: BOOL := FALSE;		// Flag Step concluso: inizio nuovo 
+	bFilpFlopCycle: BOOL := FALSE;		// bistabile ciclo
+	bCambioDir	: BOOL := FALSE;		// Indica Step di movimento con cambio direzione
+	fbTCambioDir: TON := (PT:=T#2S);	// Tmr. per cambio direzione X/Y
+	//-------------------- dimensione buffers
+	nDimSTA   : UINT :=0;
+	nDimCMD   : UINT :=0;
+	nDimMIS   : UINT :=0;
+	nDimRxSTA : UINT :=0;
+	nDimRxCMD : UINT :=0;
+	nDimRxMIS : UINT :=0;
+	//------------------- comunicazione
+	bErrComPc  : BOOL := FALSE;
+	nErrComPC  : UINT :=0;						// Flag Errore comunicazione con PC	
+	fbToutCom  : TON := (PT:=T_OUT_COMUNICAZ);	// Timeout comunicazione con PC
+	fbTPresCmd : TON := (PT:=T_PRES_CMD);		// Rit. presenza nuovo CMD su Buffer Rx PC
+	fbTPresMis : TON := (PT:=T_PRES_MIS);		// Rit. presenza nuova MIS su Buffer Rx PC
+
+END_VAR
+
+VAR_GLOBAL CONSTANT
+	RAP_VEL_LENTA	  : UINT := 10;		// Rapporto veloce su lenta (spostamento ASRV) 	
+	MAX_STEP_MISS     : UINT := 500;	// Nr. massimo di Step Missione	
+	PESO_FITTIZIO_SIM : UINT := 900;	// Kg pallet	
+	T_OUT_COMUNICAZ	  : TIME := T#5S;	// Timeout coumunicazione PC/ASRV
+	T_RUN_MIS	  	  : TIME := T#100MS;// Tmr clock run missione
+	T_PRES_CMD	  	  : TIME := T#200MS;// Tmr sicurezza pres. Nuovo comando da PC per ASRV
+	T_PRES_MIS	  	  : TIME := T#1S;	// Tmr sicurezza pres. Nuova missione da PC per ASRV
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

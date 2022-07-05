@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <DUT Name="RX_CMD_PC" Id="{de50176f-0445-4be3-b450-bd24890e28d3}">
+    <Declaration><![CDATA[TYPE RX_CMD_PC :
+STRUCT
+	WatchDog_PC        : UINT;  		// Check di rete (PC++, ASRV pareggia) 
+	Start_Miss_PC      : UINT;			// Start Missione da PC. Start=1, azzera appena Stato_Miss_ASRV=1
+	End_Miss_PC        : UINT;			// Fine Missione da PC. End=1, appena Stato_Miss_ASRV=2 o per forz.PC
+	Pintend_PC         : UINT;			// Nodo intermedio missione = Nodo semaforo di stop
+	New_Pos_PC         : UINT;			// Nodo assegnato da PC a ASRV
+	Comando_PC         : WORD;			// Word (16 bit) --> struttura Comando PC (16 byte)			
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

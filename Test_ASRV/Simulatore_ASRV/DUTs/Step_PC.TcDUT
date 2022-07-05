@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <DUT Name="Step_PC" Id="{904df6c9-a355-462c-8c62-9ab594cc6676}">
+    <Declaration><![CDATA[TYPE Step_PC :
+STRUCT
+	Comandi      : Comandi;
+	ps		     : UINT;		// Nodo da raggiungere nello step
+	dist	     : UINT;		// Distanza del Nodo da raggiungere (in cm)
+	rall	     : UINT;		// Rallentamento speccifico nello Step
+	CmFree1		 : UINT;		
+	CmFree2		 : UINT;		
+	CmFree3		 : UINT;		
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

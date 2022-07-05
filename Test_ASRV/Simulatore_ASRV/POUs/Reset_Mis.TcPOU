@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="Reset_Mis" Id="{cb98500a-5fc6-4a80-8274-020b4aa81e7e}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION Reset_Mis 
+VAR_INPUT
+	auxMis   : REFERENCE TO MIS_PC;
+	auxSta   : REFERENCE TO STA_ASRV;
+END_VAR
+VAR
+	ni	: UINT :=0;
+	ndim	: USINT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//-------------------------------
+// Azzera struttura -> MIS  
+//-------------------------------
+auxMis.Tot_step_PC   := 0;
+auxMis.Pstart_PC     := 0;
+auxMis.Pend_PC       := 0;
+auxMis.Typ_car_PC    := 0;
+auxMis.MisFree1      := 0;
+auxMis.MisFree2      := 0;
+auxMis.MisFree3      := 0;
+//------------------------- Reset Step[]
+FOR ni :=0 TO MAX_STEP_MISS BY 1 DO
+	ndim := TO_USINT(SIZEOF(auxMis.Step_PC[ni]));							// dim. setp (short)
+	MEMSET(destAddr:=ADR(auxMis.Step_PC[ni]) , fillByte:=ndim , n:=16#00 );	// max 255 byte!
+END_FOR
+
+//----------------------------
+// Reset Step programma
+//----------------------------
+auxSta.ptr_step_ASRV 	:=0;	// Reset puntatori Step
+auxSta.Stato_Miss_ASRV 	:=0;	// reset anche Stato Missione (anche se dovrebbe già essere 0)
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

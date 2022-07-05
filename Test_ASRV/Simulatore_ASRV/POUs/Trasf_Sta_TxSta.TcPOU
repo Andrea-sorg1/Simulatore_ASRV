@@ -1,0 +1,73 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="Trasf_Sta_TxSta" Id="{2f2c36dc-2bca-40be-ab22-3f0908d36045}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION Trasf_Sta_TxSta
+VAR_INPUT
+	auxSta   : REFERENCE TO STA_ASRV;
+	auxTxSta : REFERENCE TO TX_STA_ASRV;
+END_VAR
+VAR
+	ni : UINT :=0;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//-------------------------------------------------------------------
+// Trasferisce Stato ASRV in Buffer Tx a PC
+// Compatta le struttura Stato_ASRV (16 byte) in Word (16 bit)
+// Stato ASRV --> STATO TX
+//-------------------------------------------------------------------
+auxTxSta.WatchDog_ASRV       := auxSta.WatchDog_ASRV;
+auxTxSta.Pos_ASRV            := auxSta.Pos_ASRV;
+auxTxSta.Stato_MIss_ASRV     := auxSta.Stato_MIss_ASRV;
+auxTxSta.ptr_step_ASRV       := auxSta.ptr_step_ASRV;
+auxTxSta.offset_da_nodo_ASRV := auxSta.offset_da_nodo_ASRV;
+auxTxSta.Allarmi_1_ASRV      := auxSta.Allarmi_1_ASRV;
+auxTxSta.Allarmi_2_ASRV      := auxSta.Allarmi_2_ASRV;
+auxTxSta.Allarmi_3_ASRV      := auxSta.Allarmi_3_ASRV;
+auxTxSta.Allarmi_4_ASRV      := auxSta.Allarmi_4_ASRV;
+auxTxSta.Perc_Batteria_ASRV  := auxSta.Perc_Batteria_ASRV;
+auxTxSta.Peso_Teorico_ASRV   := auxSta.Peso_Teorico_ASRV;
+auxTxSta.StFree1             := auxSta.StFree1;
+auxTxSta.StFree2             := auxSta.StFree2;
+auxTxSta.StFree3             := auxSta.StFree3;
+auxTxSta.StFree4             := auxSta.StFree4;
+auxTxSta.StFree5             := auxSta.StFree5;
+//------
+auxTxSta.Stato_ASRV := BOOL_TO_UINT( auxSta.Stato_ASRV.In_Mov_X );
+auxTxSta.Stato_ASRV := auxTxSta.Stato_ASRV + BOOL_TO_UINT( auxSta.Stato_ASRV.In_Mov_Y      ) * 2;
+auxTxSta.Stato_ASRV := auxTxSta.Stato_ASRV + BOOL_TO_UINT( auxSta.Stato_ASRV.In_Mov_Av     ) * 4;
+auxTxSta.Stato_ASRV := auxTxSta.Stato_ASRV + BOOL_TO_UINT( auxSta.Stato_ASRV.In_Mov_Ind    ) * 8;
+auxTxSta.Stato_ASRV := auxTxSta.Stato_ASRV + BOOL_TO_UINT( auxSta.Stato_ASRV.In_Allarme    ) * 16;
+auxTxSta.Stato_ASRV := auxTxSta.Stato_ASRV + BOOL_TO_UINT( auxSta.Stato_ASRV.Ok_Prog       ) * 32;
+auxTxSta.Stato_ASRV := auxTxSta.Stato_ASRV + BOOL_TO_UINT( auxSta.Stato_ASRV.In_Automatico ) * 64;
+auxTxSta.Stato_ASRV := auxTxSta.Stato_ASRV + BOOL_TO_UINT( auxSta.Stato_ASRV.In_Manuale    ) * 128;
+auxTxSta.Stato_ASRV := auxTxSta.Stato_ASRV + BOOL_TO_UINT( auxSta.Stato_ASRV.Su_Nodo       ) * 256;
+auxTxSta.Stato_ASRV := auxTxSta.Stato_ASRV + BOOL_TO_UINT( auxSta.Stato_ASRV.Carico        ) * 512;
+auxTxSta.Stato_ASRV := auxTxSta.Stato_ASRV + BOOL_TO_UINT( auxSta.Stato_ASRV.PosSoll_0     ) * 1024;
+auxTxSta.Stato_ASRV := auxTxSta.Stato_ASRV + BOOL_TO_UINT( auxSta.Stato_ASRV.PosSoll_1     ) * 2048;
+auxTxSta.Stato_ASRV := auxTxSta.Stato_ASRV + BOOL_TO_UINT( auxSta.Stato_ASRV.Rich_Reset    ) * 4096;
+auxTxSta.Stato_ASRV := auxTxSta.Stato_ASRV + BOOL_TO_UINT( auxSta.Stato_ASRV.Aux13         ) * 8192;
+auxTxSta.Stato_ASRV := auxTxSta.Stato_ASRV + BOOL_TO_UINT( auxSta.Stato_ASRV.Aux14         ) * 16384;
+auxTxSta.Stato_ASRV := auxTxSta.Stato_ASRV + BOOL_TO_UINT( auxSta.Stato_ASRV.Aux15         ) * 32768;
+//------
+auxTxSta.Stato_Aux_ASRV := BOOL_TO_UINT( auxSta.Stato_Aux_ASRV.Fermo_in_X );
+auxTxSta.Stato_Aux_ASRV := auxTxSta.Stato_Aux_ASRV + BOOL_TO_UINT( auxSta.Stato_Aux_ASRV.Fermo_in_Y    ) * 2;
+auxTxSta.Stato_Aux_ASRV := auxTxSta.Stato_Aux_ASRV + BOOL_TO_UINT( auxSta.Stato_Aux_ASRV.Rotaz_in_X    ) * 4;
+auxTxSta.Stato_Aux_ASRV := auxTxSta.Stato_Aux_ASRV + BOOL_TO_UINT( auxSta.Stato_Aux_ASRV.Rotaz_in_Y    ) * 8;
+auxTxSta.Stato_Aux_ASRV := auxTxSta.Stato_Aux_ASRV + BOOL_TO_UINT( auxSta.Stato_Aux_ASRV.In_Ricarica   ) * 16;
+auxTxSta.Stato_Aux_ASRV := auxTxSta.Stato_Aux_ASRV + BOOL_TO_UINT( auxSta.Stato_Aux_ASRV.In_Sost_Batt  ) * 32;
+auxTxSta.Stato_Aux_ASRV := auxTxSta.Stato_Aux_ASRV + BOOL_TO_UINT( auxSta.Stato_Aux_ASRV.In_Manutenz   ) * 64;
+auxTxSta.Stato_Aux_ASRV := auxTxSta.Stato_Aux_ASRV + BOOL_TO_UINT( auxSta.Stato_Aux_ASRV.Aux7          ) * 128;
+auxTxSta.Stato_Aux_ASRV := auxTxSta.Stato_Aux_ASRV + BOOL_TO_UINT( auxSta.Stato_Aux_ASRV.Aux8          ) * 256;
+auxTxSta.Stato_Aux_ASRV := auxTxSta.Stato_Aux_ASRV + BOOL_TO_UINT( auxSta.Stato_Aux_ASRV.Aux9          ) * 512;
+auxTxSta.Stato_Aux_ASRV := auxTxSta.Stato_Aux_ASRV + BOOL_TO_UINT( auxSta.Stato_Aux_ASRV.Aux10         ) * 1024;
+auxTxSta.Stato_Aux_ASRV := auxTxSta.Stato_Aux_ASRV + BOOL_TO_UINT( auxSta.Stato_Aux_ASRV.Aux11         ) * 2048;
+auxTxSta.Stato_Aux_ASRV := auxTxSta.Stato_Aux_ASRV + BOOL_TO_UINT( auxSta.Stato_Aux_ASRV.Aux12         ) * 4096;
+auxTxSta.Stato_Aux_ASRV := auxTxSta.Stato_Aux_ASRV + BOOL_TO_UINT( auxSta.Stato_Aux_ASRV.Aux13         ) * 8192;
+auxTxSta.Stato_Aux_ASRV := auxTxSta.Stato_Aux_ASRV + BOOL_TO_UINT( auxSta.Stato_Aux_ASRV.Aux14         ) * 16384;
+auxTxSta.Stato_Aux_ASRV := auxTxSta.Stato_Aux_ASRV + BOOL_TO_UINT( auxSta.Stato_Aux_ASRV.Aux15         ) * 32768;
+ 
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

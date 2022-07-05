@@ -1,0 +1,275 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="MAIN" Id="{c7bd734a-f427-4fd6-a2f1-efed7c95fa23}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR 
+	bError 		: BOOL := FALSE;
+	bByPassPC 	: BOOL := FALSE;	// Aux per test senza PC	
+	sX			: ASRV;				// appoggio struct ASRV
+	bPresRxMis	: BOOL :=FALSE;		// flag presenza dati su buffer Rx
+	bPresRxCmd	: BOOL :=FALSE;		// flag presenza dati su buffer Rx
+
+	//-------------------- scrittura / lettura file
+	nAux		: UINT := 0;
+	sPath		: STRING;
+	sMessagg	: STRING;
+	fbFileWrite : FB_File_Write;
+	bWrite		: BOOL	:=FALSE;	// Trigger write	
+	bWriteOk	: BOOL	:=FALSE;	// write Ok
+	bWriteErr	: BOOL	:=FALSE;	// write Err	
+	fbFileRead  : FB_File_Read;
+	bRead		: BOOL	:=FALSE;	// Trigger Read	
+	bReadOk		: BOOL	:=FALSE;	// Read Ok
+	bReadErr	: BOOL	:=FALSE;	// Read Err	
+END_VAR
+
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//----------------------------------------------------
+// Check dimensione strutture (per confronto con PC)
+//----------------------------------------------------
+nDimRxCMD 	:= SIZEOF(RX_CMD_PC); 	// check dimensione
+nDimRxMIS 	:= SIZEOF(RX_MIS_PC); 	// check dimensione
+nDimRxSTA 	:= SIZEOF(TX_STA_ASRV); // check dimensione
+nDimCMD 	:= SIZEOF(CMD_PC); 		// check dimensione
+nDimMIS 	:= SIZEOF(MIS_PC); 		// check dimensione
+nDimSTA 	:= SIZEOF(STA_ASRV); 	// check dimensione
+bFilpFlopCycle := NOT bFilpFlopCycle;
+
+//#####	
+//------------------------------------------------------
+// Lettura numero ASRV da File 'C:\ASRV\ASRV_NUM.TXT'
+// se errore assegna numero ASRV = 99
+//------------------------------------------------------
+sPath := 'C:\ASRV\ASRV_NUM.TXT';
+IF _TaskInfo[1].FirstCycle = TRUE THEN		// 1° ciclo scansione PLC
+	bRead := TRUE;
+	nNumAsrv := 99;							// default se manca file o errore lettura
+END_IF
+// Lettura -> "nNumAsrv"
+fbFileRead(bStart:=bRead, sFileName:=sPath, sMess:=sMessagg, 	// nome file + messaggio
+		    nModeOpen:=FOPEN_MODEREAD OR FOPEN_MODETEXT,		// apertura, testo		
+            bOperaz_Ok:=bReadOk, bOperaz_Err:=bReadErr);		// risultato
+IF bReadOk = TRUE THEN
+	nAux := TO_UINT(sMessagg);
+	IF nAux <1 OR nAux>10 THEN
+		nAux 	 :=99;						// default se manca file o errore lettura
+		bReadErr := TRUE;
+		bReadOk  := FALSE;
+	END_IF
+	nNumAsrv :=nAux;
+END_IF
+IF bReadErr = TRUE THEN
+	sMessagg := TO_STRING(nNumAsrv);
+	bWrite := TRUE;
+END_IF
+bReadOk  := FALSE;
+bReadErr  := FALSE;
+// Scrittura
+// (creazione file se errore lettura e scrive 99) 
+fbFileWrite(bStart:=bWrite, sFileName:=sPath, sMess:=sMessagg, 	// nome file + messaggio
+		    nModeOpen:=FOPEN_MODEWRITE OR FOPEN_MODETEXT,		// sovrascrittura, testo		
+            bOperaz_Ok:=bWriteOk, bOperaz_Err:=bWriteErr);		// risultato
+IF bWriteErr = TRUE OR bWriteOk = TRUE THEN
+	bWriteOk  := FALSE;
+	bWriteErr  := FALSE;
+END_IF
+//#####	
+
+
+//----------------------------------------------------------------
+// Check comunicazione Ok con PC  e pareggia WatchDog Stato ASRV
+//----------------------------------------------------------------
+nErrComPC := 1;
+fbClassAsrv.Get_sAsrv(auxAsrv:=sX);//##>>				// "sAsrv" >> "sX"
+sX.ASRV_num := nNumAsrv;								// Assegna Nr. ASRV
+Check_Com_PC(nWatchDogPC:=sRxCmd.WatchDog_PC, 
+             nWatchDogASRV:=sX.ASRV_STA.WatchDog_ASRV,	
+			 fbTout:=fbToutCom,
+			 nErroreCom:=nErrComPC ); 
+fbClassAsrv.Set_sAsrv(auxAsrv:=sX);//##<<				// "sAsrv" << "sX"
+
+//-------------------------------------------------------------------------
+// === RX da PC (CMD,MIS) === 
+// Rit. presenza nuovi dati su Buffer Rx PC.
+// Essendo il PLC passivo nella comunicazione, per capire se è presente
+// un nuovo dato nei buffer RX "sRxCmd" e "sRxMis", controlliamo che il valore di 
+// 	  	"sRxCmd.WatchDog_PC" > 0 && <> "Old_WatchDog_PC" (sempre)
+// 	  	"sRxMis.Tot_step_PC" > 0	(sempre)
+// Se Si, facciamo decorrere un tempo (sicurezza buffer completo) e quindi
+// acquisiamo il dato nel buffer di lavoro:
+//  	"sRxCmd" >> "sCmd"
+//  	"sRxMis" >> "sMis"
+// Successivamente aggiorniamo il valore di:
+// 	  	"Old_WatchDog_PC" := "sRxCmd.WatchDog_PC" 
+// 	  	"sRxMis.Tot_step_PC" :=0
+// La prossima lettura compilerà nuovamente i buffer Rx con valori >0
+//-------------------------------------------------------------------------
+bPresRxCmd := FALSE;
+bPresRxMis := FALSE;
+IF nErrComPC = 0 OR bByPassPC THEN
+	IF sRxCmd.WatchDog_PC>0 AND sRxCmd.WatchDog_PC<>Old_WatchDog_PC THEN
+		bPresRxCmd := TRUE;
+	END_IF
+	IF sRxMis.Tot_step_PC>0 THEN
+		bPresRxMis := TRUE;
+	END_IF
+END_IF	
+fbTPresCmd( IN:=bPresRxCmd );	// Tmr presenza nuovi dati in Buffer Rx "sRxCmd" 	
+fbTPresMis( IN:=bPresRxMis );	// Tmr presenza nuovi dati in Buffer Rx "sRxMis" 
+
+//-------------------------------------------------------
+// Trasferisce "sRxCmd" e "sRxMis" ricevuti da PC 
+// su Var.Globali "sCmd" e "sMis", dopo un tmr di sicurezza 
+// presenza dati, solo se non errore di comunicazione
+//-------------------------------------------------------
+IF nErrComPC = 0 OR bByPassPC THEN
+	//------------------------------------------------------
+	// Trasferisce "sRxCmd" e "sRxMis" ricevuti da PC 
+	// "sRxCmd" >> "sCmd" (scompatta le Word)
+	// "sRxMis" >> "sMis" (scompatta le Word)
+	// "sMis" e "sCmd" vengono compilate impulsivmanete 
+	// dopo un tempo di pres.dati in buffer Rx.
+	//------------------------------------------------------
+	IF fbTPresMis.Q = TRUE THEN								// Tmr pres.nuovo buffer missione scaduto
+		Trasf_RxMiss_Miss( auxRxMis:=sRxMis, auxMis:=sMis );// "sRxMis" --> "sMis"  
+	END_IF
+	IF fbTPresCmd.Q = TRUE THEN								// Tmr pres.nuovo buffer comando scaduto 
+		Old_WatchDog_PC := sRxCmd.WatchDog_PC;				// aggiorna "Old_WatchDog_PC"
+		Trasf_RxCmd_Cmd( auxRxCmd:=sRxCmd , auxCmd:=sCmd );	// "sRxCmd" --> "sCmd"  
+		//------------------------------------------------
+		// Rx Nuova Posizione da PC --> Pos_ASRV
+		//------------------------------------------------
+		fbClassAsrv.Get_sAsrv(auxAsrv:=sX);//##>>				// "sAsrv" >> "sX"
+		IF sCmd.New_Pos_PC > 0 AND sX.ASRV_STA.Stato_Miss_ASRV=0 THEN 
+			sX.ASRV_STA.Pos_ASRV := sCmd.New_Pos_PC;
+			sX.ASRV_STA.offset_da_nodo_ASRV := 0;
+			sX.ASRV_STA.Stato_ASRV.Su_Nodo := TRUE;
+			//-------------------------------- memorizza stop su direzione X,Y
+			IF sX.ASRV_STA.Stato_ASRV.In_Mov_X = TRUE THEN
+				sX.ASRV_STA.Stato_Aux_ASRV.Fermo_in_X := TRUE;	
+			END_IF
+			IF sX.ASRV_STA.Stato_ASRV.In_Mov_Y = TRUE THEN
+				sX.ASRV_STA.Stato_Aux_ASRV.Fermo_in_Y := TRUE;	
+			END_IF
+			sX.ASRV_STA.Stato_ASRV.In_Mov_Av := FALSE;
+			sX.ASRV_STA.Stato_ASRV.In_Mov_Ind := FALSE;
+			sX.ASRV_STA.Stato_ASRV.In_Mov_X := FALSE;
+			sX.ASRV_STA.Stato_ASRV.In_Mov_Y := FALSE;
+		END_IF
+		fbClassAsrv.Set_sAsrv(auxAsrv:=sX);//##<<				// "sAsrv" << "sX"
+	END_IF
+	//------------------------------------------------------
+	// Aggiorna Classe "sAsrv" con "sCmd" e "sMis" Rx da PC
+	// Se non errore di comunicazione
+	//------------------------------------------------------
+	fbClassAsrv.Aggiorna_CMD_da_PC(auxCmd := sCmd);			// "sCmd" >> "sAsrv"
+	fbClassAsrv.Aggiorna_MIS_da_PC(auxMis := sMis);  		// "sMis" >> "sAsrv"
+END_IF			 
+
+//################################################ Gestione
+//################################################ Gestione
+//################################################ Gestione
+
+//-------------------------------------------------
+// Forza Reset Missione
+// Flag attivato da PC "End_Mis_PC=1" o forzato PLC
+//-------------------------------------------------
+IF bResetMis=TRUE THEN												
+	bResetMis :=FALSE;
+	bError := fbClassAsrv.Azzera_MIS();							// Reset Missione >> azzera ASRV 1 
+	//-------------------------------------
+	// Azzera var.globale "sMis" 
+	//-------------------------------------
+	fbClassAsrv.Get_sAsrv(auxAsrv:=sX);//##>>					// "sAsrv" >> "sX"
+	Reset_Mis(auxMis := sMis, auxSta:= sX.ASRV_STA);		    // Reset "sMis" + aggiorna stato sX (ptr step, stato_miss)
+	sRxMis.Tot_step_PC := 0;									// Reset "sRxMis.Tot_step_PC" (buffer Rx da PC - dovrebbe essere già 0)
+	fbClassAsrv.Set_sAsrv(auxAsrv:=sX);//##<<					// "sAsrv" << "sX"
+END_IF
+
+
+//############ Simulazione ##############
+//############ Simulazione ##############
+//------------------------------------------
+// Simula cambio Stato "sAsrv" - STA
+// Flag forzato PLC 
+// Nella funzione possiamo impostare lo  
+// stato ASRV come vogliamo
+//------------------------------------------
+IF bSimulaSta=TRUE THEN
+	bSimulaSta :=FALSE;
+	//-------------------compila "sAsrv" - STA (Stato)
+	fbClassAsrv.Get_sAsrv(auxAsrv:=sX);//##>>			// "sAsrv" >> "sX" 
+	Simula_Compila_Sta( nNodo:=143, bCarico:=FALSE, sX.ASRV_STA ); 	// Compila Stato >> "sX"
+	fbClassAsrv.Set_sAsrv(auxAsrv:=sX);//##<<			// "sAsrv" << "sX"
+END_IF
+//-----------------------------------------------------
+// Simula Nuova Missione da PC "sMis" -> "sAsrv" - MIS
+// Flag forzato PLC 
+// Nella funzione possiamo impostare la  
+// missione ASRV come vogliamo
+//-----------------------------------------------------
+IF bSimulaMis=TRUE THEN
+	bSimulaMis :=FALSE;
+	bError := fbClassAsrv.Azzera_MIS();					// Reset Mis >> "sAsrv"
+	//-------------------compila "sMis"
+	Simula_Compila_Mis( auxMis := sMis );				// compila Missione >> "sMis" (da PC)
+    fbClassAsrv.Aggiorna_MIS_da_PC(auxMis := sMis);		// "sMis" >> "sAsrv"
+END_IF
+//-----------------------------------------------------------------
+// Simula Run Missione (con Missione attiva)
+// L'elaborazione degli Step modifica lo stato "sAsrv" - STA
+//-----------------------------------------------------------------
+fbClassAsrv.Get_sAsrv(auxAsrv:=sX);//##>>			// "sAsrv" >> "sX" 
+Simula_Run_Mis( auxSta:=sX.ASRV_STA, auxMis:=sX.ASRV_MIS, auxCmd:= sX.ASRV_CMD, bError=>bError ); 
+fbClassAsrv.Set_sAsrv(auxAsrv:=sX);//##<<			// "sAsrv" << "sX"
+
+//############ Simulazione ##############
+//############ Simulazione ##############
+
+
+//------------------------------------------
+// Gestione Flag Start/End Missione
+// Start / End sempre da "Cmd" PC
+//------------------------------------------
+fbClassAsrv.Get_sAsrv(auxAsrv:=sX);//##>>				// "sAsrv" >> "sX"
+//----------------------------------------
+// Start missione da PC -> Start ASRV=1
+// Dopo aver ricevuto la missione si attende 
+// che PC attivi "sCmd.Start_Mis_PC=1"
+//----------------------------------------
+IF sX.ASRV_CMD.Start_Miss_PC = 1 THEN
+	sX.ASRV_STA.Stato_Miss_ASRV :=1; 					// Stato Miss ASRV  = 1
+	sX.ASRV_STA.Stato_ASRV.Ok_Prog := FALSE;			// Stato Ok_Prog = 0
+END_IF
+//-----------------------------------------------------
+// End missione da PC -> Start ASRV=0 + Reset missione
+// Dopo aver concluso la missione si attende 
+// che PC attivi "sCmd.End_Mis_PC=1"
+//-----------------------------------------------------
+IF sX.ASRV_CMD.End_Miss_PC = 1 THEN
+	sX.ASRV_STA.Stato_Miss_ASRV :=0;					// Stato Miss ASRV  = 0
+	sX.ASRV_STA.Stato_ASRV.Ok_Prog := TRUE;				// Stato Ok_Prog = 1
+	bResetMis := TRUE;									// flag x Reset Missione
+END_IF
+fbClassAsrv.Set_sAsrv(auxAsrv:=sX);//##<<				// "sAsrv" << "sX"
+
+//################################################ Gestione
+//################################################ Gestione
+//################################################ Gestione
+
+
+
+//--------------------------------------------------
+// === TX a PC (STA) === 
+// Aggiorna STA da Tx a PC con Classe ASRV 
+//--------------------------------------------------
+bError := fbClassAsrv.Aggiorna_STA_a_PC(auxSta := sSta);// trasf. "sAsrv" >> "sSta" (stato per PC)	
+//------------------------------------------------------
+// Prepara Stato ASRV per Tx a PC (+ compatta Word)
+//------------------------------------------------------
+Trasf_Sta_TxSta( auxSta:=sSta, auxTxSta:=sTxSta );		// Stato "sSta" >> "sTxSta" (STATO TX a PC) 
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,197 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="Simula_Run_Mis" Id="{b339e085-d4ef-4387-9ef8-3b7b3382b7e3}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION Simula_Run_Mis 
+VAR_INPUT
+	auxSta   : REFERENCE TO STA_ASRV;
+	auxMis   : REFERENCE TO MIS_PC;
+	auxCmd   : REFERENCE TO CMD_PC;
+END_VAR
+VAR_OUTPUT
+	bError	 : BOOL := FALSE;
+END_VAR
+VAR
+	nStep    : UINT;
+	sP	 	 : Step_PC;
+	sP_1 	 : Step_PC;			// step successivo
+	bStop 	 : BOOL :=FALSE;	
+	fCmVel	 : REAL;
+	fCmLen	 : REAL;
+	fCmSpost : REAL :=0;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//--------------------------------------------------------
+// Simula Run Missione ASRV
+//--------------------------------------------------------
+fbTSimRun( IN:=(NOT bSimTrigRun) );						// Tmr esecuzione Run Missione	
+bSimTrigRun := fbTSimRun.Q;								// impulso elaborazione
+IF bSimTrigRun = FALSE OR bSimulaRun = FALSE THEN		// Se non impulso o non abilitazione simula Run, ritorna
+	RETURN;
+END_IF
+uCntSimRun := uCntSimRun +1;							// Cnt cicli 
+fCmVel := TO_REAL(nSimCmSpost);	
+fCmLen := fCmVel/ TO_REAL(nRappVelLen);	
+//-----------------------------------------
+// Tmr sosta per cambio direzione
+//-----------------------------------------
+fbTCambioDir( IN:=bCambioDir );							// Tmr cambio direzione	
+
+//--------------------------------------------------------
+// Verifica Condizioni per non elaborare lo Step
+//--------------------------------------------------------
+IF auxSta.ptr_step_ASRV >= auxMis.Tot_step_PC OR 
+   auxSta.ptr_step_ASRV > MAX_STEP_MISS	      OR 
+   	auxSta.Stato_Miss_ASRV <> 1               THEN
+   	bError := TRUE;
+   RETURN;
+END_IF
+//---------------------------------------------------------------------
+// Se Step attuale = 0 (inizio missione) allora abilita nuovo Step (=1)
+//---------------------------------------------------------------------
+IF auxSta.ptr_step_ASRV=0 THEN 
+	bSimRunNew := TRUE;
+END_IF
+//---------------------------------------------------
+// Se nuovo Step, incrementa puntatore
+//---------------------------------------------------
+IF bSimRunNew=TRUE THEN 
+	auxSta.ptr_step_ASRV := auxSta.ptr_step_ASRV +1;	// Step ++
+END_IF	
+nStep := auxSta.ptr_step_ASRV;
+sP   := auxMis.Step_PC[nStep];
+sP_1 := auxMis.Step_PC[nStep+1];
+sLastStep := sP;				// salva ultimo step x visualizzazione
+//--------------------------------------------
+// preset stato movimentazione = fermo
+//--------------------------------------------
+IF auxSta.Stato_ASRV.In_Mov_X = TRUE THEN
+	auxSta.Stato_Aux_ASRV.Fermo_in_X := TRUE;	
+END_IF
+IF auxSta.Stato_ASRV.In_Mov_Y = TRUE THEN
+	auxSta.Stato_Aux_ASRV.Fermo_in_Y := TRUE;	
+END_IF
+auxSta.Stato_ASRV.In_Mov_X   := FALSE;
+auxSta.Stato_ASRV.In_Mov_Y   := FALSE;
+auxSta.Stato_ASRV.In_Mov_Av  := FALSE;
+auxSta.Stato_ASRV.In_Mov_Ind := FALSE;
+//----------------------------------------------------
+// Se nuovo Step preset posizione, offset=0 + su Nodo 
+//----------------------------------------------------
+IF bSimRunNew=TRUE THEN 
+	//auxSta.offset_da_nodo_ASRV := 0;	// offset = 0
+	auxSta.Stato_ASRV.Su_Nodo := TRUE;	// Su nodo
+	//--------------------------------------------
+	// Passo Carico
+	//--------------------------------------------
+	IF sP.Comandi.CarSoll_0 OR
+	   sP.Comandi.CarSoll_1 THEN
+		auxSta.Stato_ASRV.Carico := TRUE;
+		auxSta.Peso_Teorico_ASRV := PESO_FITTIZIO_SIM;	// fittizio
+		RETURN;
+	END_IF
+	//--------------------------------------------
+	// Passo Scarico
+	//--------------------------------------------
+	IF sP.Comandi.Scarica THEN
+		auxSta.Stato_ASRV.Carico := FALSE;
+		auxSta.Peso_Teorico_ASRV := 0;	
+		RETURN;
+	END_IF
+	//--------------------------------------------
+	// Passo Fine Missione
+	//--------------------------------------------
+	IF sP.Comandi.End THEN
+		auxSta.Stato_Miss_ASRV := 2;
+		RETURN;
+	END_IF
+END_IF
+//------------------------------
+// reset new step
+//------------------------------
+bSimRunNew := FALSE;
+
+//--------------------------------------------
+// Passo Spostamento
+//--------------------------------------------
+IF sP.Comandi.In_Mov_X OR
+   sP.Comandi.In_Mov_Y THEN
+	//----------------------------------------------------
+	// verifica se cambio di direzione X/Y (cambio ruote)
+	//----------------------------------------------------
+	IF(auxSta.Stato_Aux_ASRV.Fermo_in_X = TRUE AND sP.Comandi.In_Mov_Y = TRUE) OR
+	  (auxSta.Stato_Aux_ASRV.Fermo_in_Y = TRUE AND sP.Comandi.In_Mov_X = TRUE) THEN  
+		bCambioDir := TRUE;	
+	END_IF
+	//-------------------------------------------------------------
+	// Elabora solo se ASRV non è su Pintend oppure se non ho
+	// il comando di Stop ASRV oppure trascorso Tmr cambio direzione
+	//-------------------------------------------------------------
+	bStop := FALSE;
+	IF auxSta.Pos_ASRV = auxCmd.Pintend_PC OR auxCmd.Comando_PC.Stop = TRUE OR 
+	   (bCambioDir = TRUE AND fbTCambioDir.Q = FALSE) THEN
+		bStop := TRUE;
+	END_IF
+	IF bStop = FALSE THEN
+		IF sP.Comandi.In_Mov_X THEN auxSta.Stato_ASRV.In_Mov_X := TRUE; END_IF
+		IF sP.Comandi.In_Mov_Y THEN auxSta.Stato_ASRV.In_Mov_Y := TRUE; END_IF
+		IF sP.Comandi.In_Mov_Av THEN auxSta.Stato_ASRV.In_Mov_Av := TRUE; END_IF
+		IF sP.Comandi.In_Mov_Ind THEN auxSta.Stato_ASRV.In_Mov_Ind := TRUE; END_IF
+		auxSta.Stato_Aux_ASRV.Fermo_in_X := FALSE;	
+		auxSta.Stato_Aux_ASRV.Fermo_in_Y := FALSE;	
+		bCambioDir := FALSE;	
+		//----------------------------------------------------
+		// Se Non nuovo Step incrementa offset + su Nodo=False 
+		//----------------------------------------------------
+		IF bSimRunNew=FALSE THEN 
+			//----------------------------------------------------
+			// Se abilitato Lenta allora incrementa solo 1 unità
+			//----------------------------------------------------
+			fCmSpost := fCmVel;
+			IF sP.Comandi.Lenta = TRUE THEN
+				fCmSpost := fCmLen;
+			END_IF
+			
+			//######
+			//------------------------------------------
+			// Se cambio direzione step successivo allora
+			// lenta con un pò di anticipo
+			//------------------------------------------
+			IF sP.Comandi.In_Mov_X <> sP_1.Comandi.In_Mov_X OR 
+               sP.Comandi.In_Mov_Y <> sP_1.Comandi.In_Mov_Y THEN
+				IF auxSta.offset_da_nodo_ASRV+30 > sP.dist THEN
+					fCmSpost := fCmLen;
+				END_IF 
+			END_IF
+			//######
+			
+			auxSta.offset_da_nodo_ASRV := auxSta.offset_da_nodo_ASRV + TO_UINT(fCmSpost);	// offset + X cm
+			auxSta.Stato_ASRV.Su_Nodo := FALSE;												// Fuori nodo
+			//------------------------------------------------------------
+			// Verifica Distanza Percorsa >= Dist. Step. Se si nuovo Step
+			//------------------------------------------------------------
+			IF auxSta.offset_da_nodo_ASRV >= sp.dist THEN
+				auxSta.Pos_ASRV := sP.ps;			// Pos. step
+				auxSta.offset_da_nodo_ASRV := 0;	// offset = 0
+				auxSta.Stato_ASRV.Su_Nodo := TRUE;	// Su nodo
+				IF auxSta.Stato_ASRV.In_Mov_X = TRUE THEN
+					auxSta.Stato_Aux_ASRV.Fermo_in_X := TRUE;	
+				END_IF
+				IF auxSta.Stato_ASRV.In_Mov_Y = TRUE THEN
+					auxSta.Stato_Aux_ASRV.Fermo_in_Y := TRUE;	
+				END_IF
+				auxSta.Stato_ASRV.In_Mov_Av := FALSE;
+				auxSta.Stato_ASRV.In_Mov_Ind := FALSE;
+				auxSta.Stato_ASRV.In_Mov_X := FALSE;
+				auxSta.Stato_ASRV.In_Mov_Y := FALSE;
+				bSimRunNew := TRUE;
+			END_IF
+		END_IF
+	END_IF
+END_IF
+
+
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

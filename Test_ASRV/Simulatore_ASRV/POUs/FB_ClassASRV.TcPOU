@@ -1,0 +1,128 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="FB_ClassASRV" Id="{529603a1-d73a-4126-b4b2-b4c87a469a99}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK PUBLIC FB_ClassASRV
+VAR
+	sAsrv 	 : 	ASRV;	// struttura ASRV	
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="Aggiorna_CMD_da_PC" Id="{64385be0-9836-425b-b7fc-7e09e6d85831}">
+      <Declaration><![CDATA[METHOD PUBLIC Aggiorna_CMD_da_PC : BOOL
+VAR_INPUT
+	auxCmd   : REFERENCE TO CMD_PC;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//-------------------------------------
+// Aggiorna struttura -> ASRV 1 - CMD  
+//-------------------------------------
+sAsrv.ASRV_CMD := auxCmd;
+Aggiorna_CMD_da_PC := FALSE;	// errore
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Aggiorna_MIS_da_PC" Id="{088f6793-acd3-4afa-af3c-4433e329213e}">
+      <Declaration><![CDATA[METHOD PUBLIC Aggiorna_MIS_da_PC : BOOL
+VAR_INPUT
+	auxMis   : REFERENCE TO MIS_PC;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//------------------------------------
+// Aggiorna struttura -> ASRV 1 - MIS 
+//------------------------------------
+sAsrv.ASRV_MIS := auxMis;
+Aggiorna_MIS_da_PC := FALSE;	// errore]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Aggiorna_STA_a_PC" Id="{878aa6b1-2f44-4f97-9a28-bb2250e25781}">
+      <Declaration><![CDATA[METHOD PUBLIC Aggiorna_STA_a_PC : BOOL
+VAR_INPUT
+	auxSta   : REFERENCE TO STA_ASRV;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//-----------------------------------
+// Aggiorna da struttura <- STA  
+//----------------------------------
+auxSta := sAsrv.ASRV_STA;
+Aggiorna_STA_a_PC := FALSE;	// errore
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Azzera_MIS" Id="{cfa82c36-39b9-4829-80b4-abe06a384dbb}">
+      <Declaration><![CDATA[METHOD PUBLIC Azzera_MIS : BOOL
+VAR
+	ndim	: USINT;
+	ni		: UINT; 	
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//-------------------------------
+// Azzera struttura -> MIS  
+//-------------------------------
+sAsrv.ASRV_MIS.Tot_step_PC   := 0;
+sAsrv.ASRV_MIS.Pstart_PC     := 0;
+sAsrv.ASRV_MIS.Pend_PC       := 0;
+sAsrv.ASRV_MIS.Typ_car_PC    := 0;
+sAsrv.ASRV_MIS.MisFree1      := 0;
+sAsrv.ASRV_MIS.MisFree2      := 0;
+sAsrv.ASRV_MIS.MisFree3      := 0;
+//------------------------- Reset Step[]
+FOR ni :=0 TO MAX_STEP_MISS BY 1 DO
+	ndim := TO_USINT(SIZEOF(sAsrv.ASRV_MIS.Step_PC[ni]));							// dim. setp (short)
+	MEMSET(destAddr:=ADR(sAsrv.ASRV_MIS.Step_PC[ni]) , fillByte:=ndim , n:=16#00 );	// max 255 byte!
+END_FOR
+
+//----------------------------
+// Reset Step programma
+//----------------------------
+sAsrv.ASRV_STA.ptr_step_ASRV 	:=0;	// Reset puntatori Step
+sAsrv.ASRV_STA.Stato_Miss_ASRV 	:=0;	// reset anche Stato Missione (anche se dovrebbe già essere 0)
+//-------------------------------- memorizza stop su direzione X,Y
+IF sAsrv.ASRV_STA.Stato_ASRV.In_Mov_X = TRUE THEN
+	sAsrv.ASRV_STA.Stato_Aux_ASRV.Fermo_in_X := TRUE;	
+END_IF
+IF sAsrv.ASRV_STA.Stato_ASRV.In_Mov_Y = TRUE THEN
+	sAsrv.ASRV_STA.Stato_Aux_ASRV.Fermo_in_Y := TRUE;	
+END_IF
+sAsrv.ASRV_STA.Stato_ASRV.In_Mov_Av := FALSE;
+sAsrv.ASRV_STA.Stato_ASRV.In_Mov_Ind := FALSE;
+sAsrv.ASRV_STA.Stato_ASRV.In_Mov_X   := FALSE;
+sAsrv.ASRV_STA.Stato_ASRV.In_Mov_Y   := FALSE;
+Azzera_MIS := FALSE;	// errore
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Get_sAsrv" Id="{35f7f0a4-bf2a-4735-8306-5d4fba753654}">
+      <Declaration><![CDATA[METHOD PUBLIC Get_sAsrv : BOOL
+VAR_INPUT
+	auxAsrv   : REFERENCE TO ASRV;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//------------------------------------------------------------------------------
+// Recupera struttura globale "sAsrv" di Classe >> struttura locale di appoggio
+//-------------------------------------------------------------------------------
+auxAsrv := sAsrv;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Set_sAsrv" Id="{ac1590c6-0104-4e6b-9b8c-5797c7fb1455}">
+      <Declaration><![CDATA[METHOD PUBLIC Set_sAsrv : BOOL
+VAR_INPUT
+	auxAsrv   : REFERENCE TO ASRV;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//------------------------------------------------------------------------------
+// Salva struttura locale di appoggio >> struttura globale di Classe "sAsrv" 
+//-------------------------------------------------------------------------------
+sAsrv := auxAsrv;
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

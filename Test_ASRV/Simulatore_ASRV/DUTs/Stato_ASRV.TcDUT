@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <DUT Name="Stato_ASRV" Id="{c7158a2c-dc41-4a0d-bbbc-74f204868eb8}">
+    <Declaration><![CDATA[TYPE Stato_ASRV :
+STRUCT
+	In_Mov_X      : BOOL;	// In movimento su asse X (orizz)
+	In_Mov_Y      : BOOL;	// In movimento su asse Y (vert)
+	In_Mov_Av     : BOOL;	// In movimento direzione +
+	In_Mov_Ind    : BOOL;	// In movimento direzione -
+	In_Allarme    : BOOL;	// In allarme
+	Ok_Prog       : BOOL;	// Pronto a ricevere Missione
+	In_Automatico : BOOL;	// In Automatico
+	In_Manuale    : BOOL;	// In Manuale	
+	Su_Nodo       : BOOL;	// Posizionato su Nodo
+	Carico        : BOOL;	// Pallet a bordo
+	PosSoll_0     : BOOL;	// Codifica pos. alzata pallet bit.0
+	PosSoll_1     : BOOL;	// Codifica pos. alzata pallet bit.1
+	Rich_Reset    : BOOL;	// Richiede reset missione a Supervisore
+	Aux13         : BOOL;
+	Aux14         : BOOL;
+	Aux15         : BOOL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <DUT Name="CMD_PC" Id="{55fa0327-183c-4099-9b39-ea271177dd08}">
+    <Declaration><![CDATA[TYPE CMD_PC :
+STRUCT
+	WatchDog_PC        : UINT;  		// Check di rete (ASRV++, PC pareggia) 
+	Start_Miss_PC      : UINT;			// Start Missione da PC. Start=1, azzera appena Stato_Miss_ASRV=1
+	End_Miss_PC        : UINT;			// Fine Missione da PC. End=1, appena Stato_Miss_ASRV=2 o per forz.PC
+	Pintend_PC         : UINT;			// Nodo intermedio missione = Nodo semaforo di stop
+	New_Pos_PC         : UINT;			// Nodo assegnato da PC a ASRV
+	Comando_PC         : Comando_PC;	// struttura Comando PC			
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>
