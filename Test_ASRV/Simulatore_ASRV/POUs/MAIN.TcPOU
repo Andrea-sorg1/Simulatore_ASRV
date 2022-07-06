@@ -34,7 +34,6 @@ nDimRxSTA 	:= SIZEOF(TX_STA_ASRV); // check dimensione
 nDimCMD 	:= SIZEOF(CMD_PC); 		// check dimensione
 nDimMIS 	:= SIZEOF(MIS_PC); 		// check dimensione
 nDimSTA 	:= SIZEOF(STA_ASRV); 	// check dimensione
-
 bFilpFlopCycle := NOT bFilpFlopCycle;
 
 //#####	
