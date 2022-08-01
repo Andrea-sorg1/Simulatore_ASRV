@@ -9,7 +9,7 @@ VAR_GLOBAL PERSISTENT
 	sCmd      : CMD_PC;			// Comando ASRV (rx da PC)
 	sMis	  : MIS_PC;			// Missione ASRV (rx da PC)
 	//--------------------- classe ASRV
-	fbClassAsrv	: FB_ClassASRV;	// Classe ASRV
+	fbClassAsrv	: FB_ClassASRV();	// Classe ASRV
 	//--------------------- per visualizzazione 
 	sLastStep : Step_PC;		// ultimo Step elaborato	
 	//-------------------- Test #####

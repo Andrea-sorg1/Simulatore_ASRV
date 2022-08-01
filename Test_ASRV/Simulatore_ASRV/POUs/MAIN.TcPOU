@@ -34,6 +34,7 @@ nDimRxSTA 	:= SIZEOF(TX_STA_ASRV); // check dimensione
 nDimCMD 	:= SIZEOF(CMD_PC); 		// check dimensione
 nDimMIS 	:= SIZEOF(MIS_PC); 		// check dimensione
 nDimSTA 	:= SIZEOF(STA_ASRV); 	// check dimensione
+
 bFilpFlopCycle := NOT bFilpFlopCycle;
 
 //#####	
@@ -123,6 +124,7 @@ fbTPresMis( IN:=bPresRxMis );	// Tmr presenza nuovi dati in Buffer Rx "sRxMis"
 // su Var.Globali "sCmd" e "sMis", dopo un tmr di sicurezza 
 // presenza dati, solo se non errore di comunicazione
 //-------------------------------------------------------
+
 IF nErrComPC = 0 OR bByPassPC THEN
 	//------------------------------------------------------
 	// Trasferisce "sRxCmd" e "sRxMis" ricevuti da PC 

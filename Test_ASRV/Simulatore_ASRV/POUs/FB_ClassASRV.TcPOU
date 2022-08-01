@@ -21,6 +21,7 @@ END_VAR
 //-------------------------------------
 sAsrv.ASRV_CMD := auxCmd;
 Aggiorna_CMD_da_PC := FALSE;	// errore
+
 ]]></ST>
       </Implementation>
     </Method>
@@ -35,7 +36,9 @@ END_VAR
 // Aggiorna struttura -> ASRV 1 - MIS 
 //------------------------------------
 sAsrv.ASRV_MIS := auxMis;
-Aggiorna_MIS_da_PC := FALSE;	// errore]]></ST>
+Aggiorna_MIS_da_PC := FALSE;	// errore
+
+]]></ST>
       </Implementation>
     </Method>
     <Method Name="Aggiorna_STA_a_PC" Id="{878aa6b1-2f44-4f97-9a28-bb2250e25781}">
@@ -50,6 +53,7 @@ END_VAR
 //----------------------------------
 auxSta := sAsrv.ASRV_STA;
 Aggiorna_STA_a_PC := FALSE;	// errore
+
 ]]></ST>
       </Implementation>
     </Method>
