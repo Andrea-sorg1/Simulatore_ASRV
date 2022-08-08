@@ -18,6 +18,7 @@ VAR
 	fCmVel	 : REAL;
 	fCmLen	 : REAL;
 	fCmSpost : REAL :=0;
+	bCS_Offset : BOOL :=FALSE;	// carico/scarico con offset
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -80,6 +81,9 @@ auxSta.Stato_ASRV.In_Mov_Ind := FALSE;
 IF bSimRunNew=TRUE THEN 
 	//auxSta.offset_da_nodo_ASRV := 0;	// offset = 0
 	auxSta.Stato_ASRV.Su_Nodo := TRUE;	// Su nodo
+
+	(*
+	//§§§ 08/08/2022 - gestione carico/scarico con Offset
 	//--------------------------------------------
 	// Passo Carico
 	//--------------------------------------------
@@ -97,6 +101,9 @@ IF bSimRunNew=TRUE THEN
 		auxSta.Peso_Teorico_ASRV := 0;	
 		RETURN;
 	END_IF
+	//§§§
+	*)
+
 	//--------------------------------------------
 	// Passo Fine Missione
 	//--------------------------------------------
@@ -110,9 +117,9 @@ END_IF
 //------------------------------
 bSimRunNew := FALSE;
 
-//--------------------------------------------
-// Passo Spostamento
-//--------------------------------------------
+//--------------------------------------------------
+// Passo Spostamento + Carico/Scarico con offset
+//--------------------------------------------------
 IF sP.Comandi.In_Mov_X OR
    sP.Comandi.In_Mov_Y THEN
 	//----------------------------------------------------
@@ -166,13 +173,42 @@ IF sP.Comandi.In_Mov_X OR
 			
 			auxSta.offset_da_nodo_ASRV := auxSta.offset_da_nodo_ASRV + TO_UINT(fCmSpost);	// offset + X cm
 			auxSta.Stato_ASRV.Su_Nodo := FALSE;												// Fuori nodo
+			
 			//------------------------------------------------------------
 			// Verifica Distanza Percorsa >= Dist. Step. Se si nuovo Step
 			//------------------------------------------------------------
 			IF auxSta.offset_da_nodo_ASRV >= sp.dist THEN
+							
+				//§§§ 08/08/2022 - gestione carico/scarico con Offset
+				bCS_Offset := FALSE;	// carico/scarico con offset
+				//--------------------------------------------
+				// Passo Carico con offset
+				//--------------------------------------------
+				IF sP.Comandi.CarSoll_0 OR
+	   				sP.Comandi.CarSoll_1 THEN
+					auxSta.Stato_ASRV.Carico := TRUE;
+					auxSta.Peso_Teorico_ASRV := PESO_FITTIZIO_SIM;	// fittizio
+					bCS_Offset := TRUE;	// carico/scarico con offset
+				END_IF
+				//--------------------------------------------
+				// Passo Scarico con offset
+				//--------------------------------------------
+				IF sP.Comandi.Scarica THEN
+					auxSta.Stato_ASRV.Carico := FALSE;
+					auxSta.Peso_Teorico_ASRV := 0;	
+					bCS_Offset := TRUE;	// carico/scarico con offset
+				END_IF
+				//§§§
+
 				auxSta.Pos_ASRV := sP.ps;			// Pos. step
-				auxSta.offset_da_nodo_ASRV := 0;	// offset = 0
-				auxSta.Stato_ASRV.Su_Nodo := TRUE;	// Su nodo
+				//§§§ 08/08/2022 - gestione carico/scarico con Offset
+				// Se carico/scarico con offset non azzera la distanza da nodo
+				IF bCS_Offset= FALSE THEN
+					auxSta.offset_da_nodo_ASRV := 0;	// offset = 0
+					auxSta.Stato_ASRV.Su_Nodo := TRUE;	// Su nodo
+				END_IF
+				//§§§
+				
 				IF auxSta.Stato_ASRV.In_Mov_X = TRUE THEN
 					auxSta.Stato_Aux_ASRV.Fermo_in_X := TRUE;	
 				END_IF
