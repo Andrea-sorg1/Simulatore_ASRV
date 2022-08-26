@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="FB_Test_XXX" Id="{6b56fde2-dc44-422e-a18a-bc5dc0ae2e00}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Test_XXX
+VAR_INPUT
+	TestMisPOINT_XXX : POINTER TO MIS_PC;	// Passaggio tramite Pointer
+	TestMisREFER_XXX : POINTER TO MIS_PC;	// Passaggio tramite Reference
+	
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Lo scopo di questa FB è verificare come passare dei parametri all'interno della FB utilizzando 
+// VAR_INPUT. In pratica passiamo un puntatore ad una struttra di tipo MIS_PC
+// All'interno della funzione poi per accedere agli elementi della strutttura passata come puntatore, utilizziamo ^" 
+
+TestMisPOINT_XXX^.Pend_PC := 100;
+TestMisPOINT_XXX^.Pstart_PC := 10;
+
+TestMisREFER_XXX^.Pend_PC :=20;]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

@@ -96,6 +96,9 @@
     <Compile Include="POUs\Simula_Run_Mis.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="POUs\FB_Test_XXX.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="POUs\Trasf_Sta_TxSta.TcPOU">
       <SubType>Code</SubType>
     </Compile>

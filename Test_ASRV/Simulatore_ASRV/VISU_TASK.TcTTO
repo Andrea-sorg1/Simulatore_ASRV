@@ -3,7 +3,7 @@
   <Task Name="VISU_TASK" Id="{a9bf8e06-3397-43f6-b6df-6c39ea94e925}">
     <!--CycleTime in micro seconds.-->
     <CycleTime>100000</CycleTime>
-    <Priority>30</Priority>
+    <Priority>8</Priority>
     <PouCall>
       <Name>VisuElems.Visu_Prg</Name>
     </PouCall>

@@ -166,6 +166,16 @@
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"519"</v>
+              <v n="TextDefault">"Hold Simulazione"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"751"</v>
+              <v n="TextDefault">"Inching (Hold a fine Step)"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"827"</v>
               <v n="TextDefault">"In_Allarme"</v>
               <l n="LanguageTexts" t="ArrayList" />
@@ -296,6 +306,16 @@
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"288"</v>
+              <v n="TextDefault">"Run"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"382"</v>
+              <v n="TextDefault">"Run / Hold"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"968"</v>
               <v n="TextDefault">"Scarica"</v>
               <l n="LanguageTexts" t="ArrayList" />
@@ -336,6 +356,21 @@
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"465"</v>
+              <v n="TextDefault">"Step"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"620"</v>
+              <v n="TextDefault">"Step 1"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"923"</v>
+              <v n="TextDefault">"Step by Step"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"313"</v>
               <v n="TextDefault">"Step Missione"</v>
               <l n="LanguageTexts" t="ArrayList" />
@@ -361,6 +396,11 @@
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>
+              <v n="TextID">"536"</v>
+              <v n="TextDefault">"Tmr Carico/Scarico"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
               <v n="TextID">"102"</v>
               <v n="TextDefault">"Tot_Step_PC"</v>
               <l n="LanguageTexts" t="ArrayList" />
@@ -378,6 +418,16 @@
             <o>
               <v n="TextID">"969"</v>
               <v n="TextDefault">"V.1.0"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"506"</v>
+              <v n="TextDefault">"V.1.1"</v>
+              <l n="LanguageTexts" t="ArrayList" />
+            </o>
+            <o>
+              <v n="TextID">"582"</v>
+              <v n="TextDefault">"V.1.2"</v>
               <l n="LanguageTexts" t="ArrayList" />
             </o>
             <o>

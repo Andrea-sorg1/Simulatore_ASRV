@@ -15,6 +15,7 @@ VAR
 	sP	 	 : Step_PC;
 	sP_1 	 : Step_PC;			// step successivo
 	bStop 	 : BOOL :=FALSE;	
+	bRitroso : BOOL :=FALSE;
 	fCmVel	 : REAL;
 	fCmLen	 : REAL;
 	fCmSpost : REAL :=0;
@@ -22,8 +23,17 @@ VAR
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[//--------------------------------------------------------
+      <ST><![CDATA[//-----------------------------------------
+// Tmr sosta per cambio direzione
+//-----------------------------------------
+fbTCambioDir( IN:=bCambioDir );							// Tmr cambio direzione	
+//-----------------------------------------
+// Tmr per cambio carico/scarico
+//-----------------------------------------
+fbTCarScar( IN:=bCarScar );								// Tmr cambio direzione	
+//--------------------------------------------------------
 // Simula Run Missione ASRV
+// Tmr esecuzione x missione
 //--------------------------------------------------------
 fbTSimRun( IN:=(NOT bSimTrigRun) );						// Tmr esecuzione Run Missione	
 bSimTrigRun := fbTSimRun.Q;								// impulso elaborazione
@@ -33,10 +43,16 @@ END_IF
 uCntSimRun := uCntSimRun +1;							// Cnt cicli 
 fCmVel := TO_REAL(nSimCmSpost);	
 fCmLen := fCmVel/ TO_REAL(nRappVelLen);	
-//-----------------------------------------
-// Tmr sosta per cambio direzione
-//-----------------------------------------
-fbTCambioDir( IN:=bCambioDir );							// Tmr cambio direzione	
+//---------------------------------------------------------
+// Uscita in attesa di carico/scarico
+//---------------------------------------------------------
+IF fbTCarScar.Q=TRUE THEN
+	bCarSCar:=FALSE;
+END_IF
+IF bCarSCar=TRUE AND fbTCarScar.Q=FALSE THEN
+	RETURN;
+END_IF; 
+
 //--------------------------------------------------------
 // Verifica Condizioni per non elaborare lo Step
 //--------------------------------------------------------
@@ -59,9 +75,23 @@ IF bSimRunNew=TRUE THEN
 	auxSta.ptr_step_ASRV := auxSta.ptr_step_ASRV +1;	// Step ++
 END_IF	
 nStep := auxSta.ptr_step_ASRV;
-sP   := auxMis.Step_PC[nStep];
+sP   := auxMis.Step_PC[nStep]; 
 sP_1 := auxMis.Step_PC[nStep+1];
 sLastStep := sP;				// salva ultimo step x visualizzazione
+
+//------------------------------------------------------------------------------------
+// solo x 1° Step !	
+// Condizione di ritorno su Nodo Step (avvicinamento a ritroso, decrementa disatnza
+// o di allontanamento da Nodo Step (incremento)
+//------------------------------------------------------------------------------------
+bRitroso := FALSE;							// non ritorno su Nodo ingresso
+IF nStep =1 THEN
+	IF auxSta.Pos_ASRV = sP.ps THEN				// Se pos.attuale ASRV = Pos.Setp in esecuzione allora ritorno su Nodo precedente
+		bRitroso :=TRUE;
+	END_IF
+END_IF
+
+
 //--------------------------------------------
 // preset stato movimentazione = fermo
 //--------------------------------------------
@@ -79,36 +109,53 @@ auxSta.Stato_ASRV.In_Mov_Ind := FALSE;
 // Se nuovo Step preset posizione, offset=0 + su Nodo 
 //----------------------------------------------------
 IF bSimRunNew=TRUE THEN 
-	//auxSta.offset_da_nodo_ASRV := 0;	// offset = 0
-	auxSta.Stato_ASRV.Su_Nodo := TRUE;	// Su nodo
-
-	(*
-	//§§§ 08/08/2022 - gestione carico/scarico con Offset
-	//--------------------------------------------
-	// Passo Carico
-	//--------------------------------------------
-	IF sP.Comandi.CarSoll_0 OR
-	   sP.Comandi.CarSoll_1 THEN
-		auxSta.Stato_ASRV.Carico := TRUE;
-		auxSta.Peso_Teorico_ASRV := PESO_FITTIZIO_SIM;	// fittizio
-		RETURN;
+	
+	//§§§§
+	IF sP.Comandi.In_Mov_X=FALSE AND sP.Comandi.In_Mov_Y=FALSE THEN
+		//--------------------------------------------
+		// Passo Carico SENZA offset (non mi sposto)
+		//--------------------------------------------
+		IF sP.Comandi.CarSoll_0 OR sP.Comandi.CarSoll_1 THEN
+			auxSta.Stato_ASRV.Carico := TRUE;
+			auxSta.Peso_Teorico_ASRV := PESO_FITTIZIO_SIM;	// fittizio
+			bCarSCar:=TRUE;		// Tmr  Carico/Scarico
+			//--------------------------------------------------
+			// Se abilitato Step, mette in Hold la simulazione
+			//--------------------------------------------------
+			IF bSimulaStep=TRUE THEN
+				bSimulaRun := FALSE;
+			END_IF
+			RETURN;
+		END_IF
+		//--------------------------------------------
+		// Passo Scarico SENZA offset (non mi sposto)
+		//--------------------------------------------
+		IF sP.Comandi.Scarica THEN
+			auxSta.Stato_ASRV.Carico := FALSE;
+			auxSta.Peso_Teorico_ASRV := 0;	
+			bCarSCar:=TRUE;		// Tmr  Carico/Scarico
+			//--------------------------------------------------
+			// Se abilitato Step, mette in Hold la simulazione
+			//--------------------------------------------------
+			IF bSimulaStep=TRUE THEN
+				bSimulaRun := FALSE;
+			END_IF
+			RETURN;
+		END_IF
 	END_IF
-	//--------------------------------------------
-	// Passo Scarico
-	//--------------------------------------------
-	IF sP.Comandi.Scarica THEN
-		auxSta.Stato_ASRV.Carico := FALSE;
-		auxSta.Peso_Teorico_ASRV := 0;	
-		RETURN;
-	END_IF
-	//§§§
-	*)
+	//§§§§
 
 	//--------------------------------------------
 	// Passo Fine Missione
 	//--------------------------------------------
 	IF sP.Comandi.End THEN
 		auxSta.Stato_Miss_ASRV := 2;
+		//--------------------------------------------------
+		// Se abilitato Step, mette in Hold la simulazione
+		//--------------------------------------------------
+		IF bSimulaStep=TRUE THEN
+			bSimulaRun := FALSE;
+		END_IF
 		RETURN;
 	END_IF
 END_IF
@@ -120,8 +167,7 @@ bSimRunNew := FALSE;
 //--------------------------------------------------
 // Passo Spostamento + Carico/Scarico con offset
 //--------------------------------------------------
-IF sP.Comandi.In_Mov_X OR
-   sP.Comandi.In_Mov_Y THEN
+IF sP.Comandi.In_Mov_X OR sP.Comandi.In_Mov_Y THEN
 	//----------------------------------------------------
 	// verifica se cambio di direzione X/Y (cambio ruote)
 	//----------------------------------------------------
@@ -165,19 +211,35 @@ IF sP.Comandi.In_Mov_X OR
 			//------------------------------------------
 			IF sP.Comandi.In_Mov_X <> sP_1.Comandi.In_Mov_X OR 
                sP.Comandi.In_Mov_Y <> sP_1.Comandi.In_Mov_Y THEN
-				IF auxSta.offset_da_nodo_ASRV+30 > sP.dist THEN
+				IF (auxSta.offset_da_nodo_ASRV+30 > sP.dist AND bRitroso=FALSE) OR 
+				   (auxSta.offset_da_nodo_ASRV < 30 AND bRitroso=TRUE) THEN
 					fCmSpost := fCmLen;
 				END_IF 
 			END_IF
 			//######
 			
-			auxSta.offset_da_nodo_ASRV := auxSta.offset_da_nodo_ASRV + TO_UINT(fCmSpost);	// offset + X cm
-			auxSta.Stato_ASRV.Su_Nodo := FALSE;												// Fuori nodo
+			//---------------------------------------------------------------------------------------
+			// Se Pos. attuale ASRV = Pos.Step allora ASRV decrementa distanza da Nodo. 
+			// (sta ritornando su Nodo ingresso Magazzino)
+			// UINT = 0..32767 positivo 32768..65xxx negativo
+			//---------------------------------------------------------------------------------------
+			IF bRitroso =TRUE THEN				        // movimento a ritroso
+				IF auxSta.offset_da_nodo_ASRV>0 AND auxSta.offset_da_nodo_ASRV<=32767 THEN	        // decrementa solo se distanza >0
+					auxSta.offset_da_nodo_ASRV := auxSta.offset_da_nodo_ASRV - TO_UINT(fCmSpost);	// si avvicina a nodo:  offset - X cm
+					IF auxSta.offset_da_nodo_ASRV>32767 THEN   										// se negativo.. =0
+						auxSta.offset_da_nodo_ASRV:=0;
+					END_IF
+				END_IF		
+			ELSE
+				auxSta.offset_da_nodo_ASRV := auxSta.offset_da_nodo_ASRV + TO_UINT(fCmSpost);		// si allontana da nodo: offset + X cm
+			END_IF
+			auxSta.Stato_ASRV.Su_Nodo := FALSE;														// Fuori nodo
 			
 			//------------------------------------------------------------
 			// Verifica Distanza Percorsa >= Dist. Step. Se si nuovo Step
 			//------------------------------------------------------------
-			IF auxSta.offset_da_nodo_ASRV >= sp.dist THEN
+			IF (auxSta.offset_da_nodo_ASRV >= sp.dist AND bRitroso=FALSE) OR	// Se avanti + offset >= distanza step
+			   (auxSta.offset_da_nodo_ASRV <=0 AND bRitroso=TRUE)   THEN		// Se indietro + offset <= 0
 							
 				//§§§ 08/08/2022 - gestione carico/scarico con Offset
 				bCS_Offset := FALSE;	// carico/scarico con offset
@@ -189,6 +251,7 @@ IF sP.Comandi.In_Mov_X OR
 					auxSta.Stato_ASRV.Carico := TRUE;
 					auxSta.Peso_Teorico_ASRV := PESO_FITTIZIO_SIM;	// fittizio
 					bCS_Offset := TRUE;	// carico/scarico con offset
+					bCarSCar:=TRUE;		// Tmr  Carico/Scarico
 				END_IF
 				//--------------------------------------------
 				// Passo Scarico con offset
@@ -197,6 +260,7 @@ IF sP.Comandi.In_Mov_X OR
 					auxSta.Stato_ASRV.Carico := FALSE;
 					auxSta.Peso_Teorico_ASRV := 0;	
 					bCS_Offset := TRUE;	// carico/scarico con offset
+					bCarSCar:=TRUE;		// Tmr  Carico/Scarico
 				END_IF
 				//§§§
 
@@ -220,6 +284,12 @@ IF sP.Comandi.In_Mov_X OR
 				auxSta.Stato_ASRV.In_Mov_X := FALSE;
 				auxSta.Stato_ASRV.In_Mov_Y := FALSE;
 				bSimRunNew := TRUE;
+				//--------------------------------------------------
+				// Se abilitato Step, mette in Hold la simulazione
+				//--------------------------------------------------
+				IF bSimulaStep=TRUE THEN
+					bSimulaRun := FALSE;
+				END_IF
 			END_IF
 		END_IF
 	END_IF

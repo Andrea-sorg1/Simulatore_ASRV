@@ -21,11 +21,23 @@ VAR
 	bRead		: BOOL	:=FALSE;	// Trigger Read	
 	bReadOk		: BOOL	:=FALSE;	// Read Ok
 	bReadErr	: BOOL	:=FALSE;	// Read Err	
+	
 END_VAR
 
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[//----------------------------------------------------
+      <ST><![CDATA[
+//@@@@@@
+//---------------------------------------------------
+// test passaggio parametri a FB
+//---------------------------------------------------
+TestMis_XXX.Tot_step_PC:=10;
+fbTestMis_XXX.TestMisPOINT_XXX := ADR(TestMis_XXX);		// Passaggio Tramite Pointer
+fbTestMis_XXX.TestMisREFER_XXX := ADR(TestMis_XXX);		// Passaggio Tramite Reference
+fbTestMis_XXX();
+//@@@@@@
+
+//----------------------------------------------------
 // Check dimensione strutture (per confronto con PC)
 //----------------------------------------------------
 nDimRxCMD 	:= SIZEOF(RX_CMD_PC); 	// check dimensione

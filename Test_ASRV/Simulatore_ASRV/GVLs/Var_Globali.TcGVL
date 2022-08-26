@@ -31,6 +31,7 @@ VAR_GLOBAL
 	bSimulaMis 	: BOOL := FALSE;  		// Trigger elaborazione simula missione 	-> compila "sMis"
 	bSimulaSta	: BOOL := FALSE;  		// Trigger elaborazione compila Stato   	-> compila "sSta"
 	bSimulaRun	: BOOL := TRUE;  		// Abilita Simulazione avanzamento missione -> compila "sSta"
+	bSimulaStep	: BOOL := FALSE;  		// Abilita Simulazione avanzamento Step by Step (alla fine di ogni Step toglie il bSimulaRun)
 	bSimTrigRun	: BOOL := FALSE;  		// Trigger elaborazione Simulazione avanzamento missione 
 	fbTSimRun   : TON := (PT:=T_RUN_MIS);// Timer Simulazione avanzamento missione
 	uCntSimRun	: LINT :=0;				// Cnt elaborazioni Simulazione Run
@@ -38,6 +39,8 @@ VAR_GLOBAL
 	bFilpFlopCycle: BOOL := FALSE;		// bistabile ciclo
 	bCambioDir	: BOOL := FALSE;		// Indica Step di movimento con cambio direzione
 	fbTCambioDir: TON := (PT:=T#2S);	// Tmr. per cambio direzione X/Y
+	bCarScar	: BOOL := FALSE;		// Indica Step di carico/scarico
+	fbTCarScar  : TON := (PT:=T#3S);	// Tmr. per carico/scarico
 	//-------------------- dimensione buffers
 	nDimSTA   : UINT :=0;
 	nDimCMD   : UINT :=0;
@@ -51,6 +54,10 @@ VAR_GLOBAL
 	fbToutCom  : TON := (PT:=T_OUT_COMUNICAZ);	// Timeout comunicazione con PC
 	fbTPresCmd : TON := (PT:=T_PRES_CMD);		// Rit. presenza nuovo CMD su Buffer Rx PC
 	fbTPresMis : TON := (PT:=T_PRES_MIS);		// Rit. presenza nuova MIS su Buffer Rx PC
+	
+	//------------------ Utilizzati per Test passaggio strutture a FB
+	TestMis_XXX      : MIS_PC;						
+	fbTestMis_XXX    : FB_Test_XXX;	
 
 END_VAR
 
